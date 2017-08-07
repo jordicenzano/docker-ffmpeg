@@ -14,3 +14,13 @@ Docker image definition with compiled ffmpeg
 ```
 docker run --rm -it jcenzano/ffmpeg
 ```
+
+# Using the image
+You can call ffmpeg docker like you call the local command, just adding the ffmpeg parameters at the end of the docker run call, synchronous example:
+```
+docker run --rm -it jcenzano/ffmpeg -i test-input.flv -f mpgts test-out.ts
+```
+You can also running it in backgroung (daemon) with `-d`:
+```
+docker run --rm -itd jcenzano/ffmpeg -i test-input.flv -f mpgts test-out.ts
+```
