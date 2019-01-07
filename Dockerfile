@@ -2,7 +2,7 @@
 # by Jordi Cenzano
 # VERSION               1.1.0
 
-FROM ubuntu:18.04
+FROM ubuntu:16.04
 LABEL maintainer "Jordi Cenzano <jordi.cenzano@gmail.com>"
 
 # Update

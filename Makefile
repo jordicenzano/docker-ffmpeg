@@ -5,7 +5,7 @@
 include ./secrets/docker-creds.secrets
 
 DOCKER_IMAGE_NAME = docker-ffmpeg
-DOCKER_IMAGE_VERSION = 1.1
+DOCKER_IMAGE_VERSION = 1.2
 
 # Import docker repo (docker hub creds)
 
