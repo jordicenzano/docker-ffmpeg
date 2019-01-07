@@ -1,9 +1,9 @@
 # Generate a docker for ffmpeg
 # by Jordi Cenzano
-# VERSION               1.0.0
+# VERSION               1.1.0
 
-FROM ubuntu:16.04
-MAINTAINER jordi.cenzano@gmail.com
+FROM ubuntu:18.04
+LABEL maintainer "Jordi Cenzano <jordi.cenzano@gmail.com>"
 
 # Update
 RUN apt-get update -y
@@ -20,51 +20,48 @@ RUN apt-get install unzip -y
 # Install wget
 RUN apt-get install wget -y
 
+# Install wget
+RUN apt-get install git -y
+
 # Prepare docker for ffmpeg
 RUN apt-get -y install autoconf automake build-essential libass-dev libfreetype6-dev \
   libsdl2-dev libtheora-dev libtool libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev \
-  libxcb-xfixes0-dev pkg-config texinfo wget zlib1g-dev
+  libxcb-xfixes0-dev pkg-config texinfo wget zlib1g-dev cmake libssl-dev
 
 # Compile ffmpeg from sources ----------------
 
+# Create dir
+RUN mkdir -p /root/ffmpeg_sources
+
+# Compile NASM
+RUN cd /root/ffmpeg_sources && \
+  wget https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2 && \
+  tar xjvf nasm-2.13.03.tar.bz2 && \
+  cd nasm-2.13.03 && \
+  ./autogen.sh && \
+  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
+  make && \
+  make install
+
 # Compile YASM
-RUN mkdir -p /root/ffmpeg_sources && \
-  apt-get install yasm -y && \
-  cd /root/ffmpeg_sources && \
-  wget http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz && \
+RUN cd /root/ffmpeg_sources && \
+  wget -O yasm-1.3.0.tar.gz https://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz && \
   tar xzvf yasm-1.3.0.tar.gz && \
   cd yasm-1.3.0 && \
   ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
   make && \
   make install
 
-# Compile NASM
-RUN cd /root/ffmpeg_sources && \
-  wget http://www.nasm.us/pub/nasm/releasebuilds/2.13.01/nasm-2.13.01.tar.bz2 && \
-  tar xjvf nasm-2.13.01.tar.bz2 && \
-  cd nasm-2.13.01 && \
-  ./autogen.sh && \
-  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
-  PATH="$HOME/bin:$PATH" make && \
-  make install
-
 # Compile x264
 RUN cd /root/ffmpeg_sources && \
-  wget http://download.videolan.org/pub/x264/snapshots/last_x264.tar.bz2 && \
-  tar xjvf last_x264.tar.bz2 && \
-  cd x264-snapshot* && \
-  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --disable-opencl && \
+  git -C x264 pull 2> /dev/null || git clone --depth 1 https://git.videolan.org/git/x264 && \
+  cd x264 && \
+  PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --enable-pic && \
   PATH="$HOME/bin:$PATH" make && \
   make install
 
 # Complile HEVC
-RUN apt-get install cmake mercurial -y && \
-  cd /root/ffmpeg_sources && \
-  hg clone https://bitbucket.org/multicoreware/x265 && \
-  cd /root/ffmpeg_sources/x265/build/linux && \
-  PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED:bool=off ../../source && \
-  make && \
-  make install
+RUN apt-get install libx265-dev libnuma-dev -y
 
 # Compile fdk-aac
 RUN cd /root/ffmpeg_sources && \
@@ -103,6 +100,14 @@ RUN apt-get install git -y && \
   PATH="$HOME/bin:$PATH" make && \
   make install
 
+# Compile SRT
+RUN cd /root/ffmpeg_sources && \
+  git clone --depth 1 https://github.com/Haivision/srt.git && \
+  cd srt && \
+  cmake -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED=OFF -DENABLE_STATIC=ON && \
+  make && \
+  make install
+
 # Compile ffmpeg
 RUN cd /root/ffmpeg_sources && \
   wget http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 && \
@@ -125,7 +130,8 @@ RUN cd /root/ffmpeg_sources && \
     --enable-libvpx \
     --enable-libx264 \
     --enable-libx265 \
-    --enable-nonfree  && \
+    --enable-nonfree \
+    --enable-libsrt && \
   PATH="$HOME/bin:$PATH" make && \
   make install && \
   hash -r
