@@ -136,6 +136,9 @@ RUN cd /root/ffmpeg_sources && \
   make install && \
   hash -r
 
+# Install network resources
+RUN apt-get -y install iproute iputils-ping net-tools
+
 # Clean up
 RUN apt-get clean
 

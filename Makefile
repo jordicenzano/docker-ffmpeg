@@ -5,7 +5,7 @@
 include ./secrets/docker-creds.secrets
 
 DOCKER_IMAGE_NAME = docker-ffmpeg
-DOCKER_IMAGE_VERSION = 1.2
+DOCKER_IMAGE_VERSION = 1.3
 
 # Import docker repo (docker hub creds)
 
@@ -31,6 +31,6 @@ last_built_date:
 	docker inspect -f '{{ .Created }}' $(DOCKER_REPO_USER)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
 
 shell:
-	docker run --rm -i -t $(DOCKER_REPO_USER)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) /bin/bash
+	docker run --rm -it --cap-add=NET_ADMIN --entrypoint /bin/bash $(DOCKER_REPO_USER)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
 
 default: build
