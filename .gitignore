@@ -1,3 +1,5 @@
 .*
 !.gitignore
-/secrets/*.secrets
+/secrets/*
+!/secrets/*.example
+
