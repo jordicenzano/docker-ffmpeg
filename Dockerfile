@@ -54,7 +54,7 @@ RUN cd /root/ffmpeg_sources && \
 
 # Compile x264
 RUN cd /root/ffmpeg_sources && \
-  git -C x264 pull 2> /dev/null || git clone --depth 1 https://git.videolan.org/git/x264 && \
+  git clone --depth 1 https://code.videolan.org/videolan/x264.git && \
   cd x264 && \
   PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --enable-pic && \
   PATH="$HOME/bin:$PATH" make && \
@@ -131,6 +131,7 @@ RUN cd /root/ffmpeg_sources && \
     --enable-libx264 \
     --enable-libx265 \
     --enable-nonfree \
+    --enable-openssl \
     --enable-libsrt && \
   PATH="$HOME/bin:$PATH" make && \
   make install && \
